@@ -36,17 +36,21 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <!-- make sure mojang's logging is set to 'info' so that their LOGGER.isDebugEnabled() behavior isn't active -->
-        <Logger level="${sys:forge.logging.mojang.level:-info}" name="com.mojang"/>
-        <Logger level="${sys:forge.logging.mojang.level:-info}" name="net.minecraft"/>
-        <Root level="all">
+        <!-- Força o jogo e as bibliotecas a ignorarem logs pesados de depuração -->
+        <Logger level="warn" name="com.mojang"/>
+        <Logger level="warn" name="net.minecraft"/>
+        <Logger level="warn" name="net.minecraftforge"/>
+        
+        <!-- PotatoForge: Mudado de 'all' para 'warn' para economizar CPU e memória -->
+        <Root level="warn">
             <filters>
                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL"/>
             </filters>
-            <AppenderRef ref="SysOut" level="${sys:forge.logging.console.level:-info}"/>
-            <AppenderRef ref="ServerGuiConsole" level="${sys:forge.logging.console.level:-info}"/>
-            <AppenderRef ref="File" level="${sys:forge.logging.file.level:-info}"/>
-            <AppenderRef ref="DebugFile" level="${sys:forge.logging.debugFile.level:-trace}"/>
+            <AppenderRef ref="SysOut" level="warn"/>
+            <AppenderRef ref="ServerGuiConsole" level="warn"/>
+            <AppenderRef ref="File" level="warn"/>
+            <!-- Desativamos o DebugFile jogando ele para 'error' para ele parar de gravar arquivos gigantes no HD/SSD -->
+            <AppenderRef ref="DebugFile" level="error"/>
         </Root>
     </Loggers>
 </Configuration>
