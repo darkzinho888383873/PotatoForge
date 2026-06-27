@@ -20,7 +20,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew ciWriteBuildNumber setup genPatches build
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PotatoForge
           path: build/libs/
