@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn" packages="net.minecraftforge.server.terminalconsole,com.mojang.util">
     <Appenders>
+        <!-- Removido o %highlightError e %minecraftFormatting para economizar ciclos de CPU -->
         <TerminalConsole name="Console">
             <PatternLayout>
-                <LoggerNamePatternSelector defaultPattern="%highlightError{[%d{HH:mm:ss}] [%t/%level] [%logger]: %minecraftFormatting{%msg{nolookups}}%n%xEx}">
-                    <!-- don't include the full logger name for Mojang's logs since they use full class names and it's very verbose -->
-                    <PatternMatch key="net.minecraft." pattern="%highlightError{[%d{HH:mm:ss}] [%t/%level] [minecraft/%logger{1}]: %minecraftFormatting{%msg{nolookups}}%n%xEx}"/>
-                    <PatternMatch key="com.mojang." pattern="%highlightError{[%d{HH:mm:ss}] [%t/%level] [mojang/%logger{1}]: %minecraftFormatting{%msg{nolookups}}%n%xEx}"/>
+                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg{nolookups}%n%xEx">
+                    <PatternMatch key="net.minecraft." pattern="[%d{HH:mm:ss}] [%t/%level] [minecraft/%logger{1}]: %msg{nolookups}%n%xEx}"/>
+                    <PatternMatch key="com.mojang." pattern="[%d{HH:mm:ss}] [%t/%level] [mojang/%logger{1}]: %msg{nolookups}%n%xEx}"/>
                 </LoggerNamePatternSelector>
             </PatternLayout>
         </TerminalConsole>
+        <!-- Apenas o SysOut simples, sem firulas visuais -->
         <Queue name="ServerGuiConsole" ignoreExceptions="true">
             <PatternLayout>
-                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %minecraftFormatting{%msg{nolookups}}{strip}%n">
-                    <!-- don't include the full logger name for Mojang's logs since they use full class names and it's very verbose -->
-                    <PatternMatch key="net.minecraft." pattern="[%d{HH:mm:ss}] [%t/%level] [minecraft/%logger{1}]: %minecraftFormatting{%msg{nolookups}}{strip}%n"/>
-                    <PatternMatch key="com.mojang." pattern="[%d{HH:mm:ss}] [%t/%level] [mojang/%logger{1}]: %minecraftFormatting{%msg{nolookups}}{strip}%n"/>
+                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg{nolookups}%n">
+                    <PatternMatch key="net.minecraft." pattern="[%d{HH:mm:ss}] [%t/%level] [minecraft/%logger{1}]: %msg{nolookups}%n"/>
+                    <PatternMatch key="com.mojang." pattern="[%d{HH:mm:ss}] [%t/%level] [mojang/%logger{1}]: %msg{nolookups}%n"/>
                 </LoggerNamePatternSelector>
             </PatternLayout>
         </Queue>
+        <!-- Gravação limpa em arquivo de texto simples -->
         <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %minecraftFormatting{%msg{nolookups}}{strip}%n"/>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg{nolookups}%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <OnStartupTriggeringPolicy/>
             </Policies>
         </RollingRandomAccessFile>
+        <!-- O DebugFile agora só grava erros críticos para não destruir o desempenho do HD/SSD -->
         <RollingRandomAccessFile name="DebugFile" fileName="logs/debug.log" filePattern="logs/debug-%i.log.gz">
-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %minecraftFormatting{%msg{nolookups}}{strip}%n"/>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg{nolookups}%n"/>
             <Policies>
                 <OnStartupTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="200MB"/>
@@ -36,17 +38,22 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <!-- make sure mojang's logging is set to 'info' so that their LOGGER.isDebugEnabled() behavior isn't active -->
-        <Logger level="${sys:forge.logging.mojang.level:-info}" name="com.mojang"/>
-        <Logger level="${sys:forge.logging.mojang.level:-info}" name="net.minecraft"/>
-        <Root level="all">
+        <!-- Forçamos nível 'warn' para Mojang e Forge ignorarem spams de inicialização -->
+        <Logger level="warn" name="com.mojang"/>
+        <Logger level="warn" name="net.minecraft"/>
+        <Logger level="warn" name="net.minecraftforge"/>
+        
+        <!-- PotatoForge: Root alterado de 'all' para 'warn' para performance máxima -->
+        <Root level="warn">
             <filters>
+                <!-- Mantido o bloqueio inteligente de pacotes de rede -->
                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL"/>
             </filters>
-            <AppenderRef ref="Console" level="${sys:forge.logging.console.level:-info}"/>
-            <AppenderRef ref="ServerGuiConsole" level="${sys:forge.logging.console.level:-info}"/>
-            <AppenderRef ref="File" level="${sys:forge.logging.file.level:-info}"/>
-            <AppenderRef ref="DebugFile" level="${sys:forge.logging.debugFile.level:-trace}"/>
+            <AppenderRef ref="Console" level="warn"/>
+            <AppenderRef ref="ServerGuiConsole" level="warn"/>
+            <AppenderRef ref="File" level="warn"/>
+            <!-- Desativamos o log de debug abusivo jogando ele para 'error' -->
+            <AppenderRef ref="DebugFile" level="error"/>
         </Root>
     </Loggers>
 </Configuration>
