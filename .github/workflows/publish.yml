@@ -2,7 +2,8 @@ name: Publish
 
 on:
   push:
-    branches: [ '1.12.x' ]
+    # Mudado para rodar em QUALQUER branch que você der push pelo celular
+    branches: [ '**' ]
 
 permissions:
   contents: read
@@ -12,13 +13,12 @@ jobs:
     uses: MinecraftForge/SharedActions/.github/workflows/gradle.yml@main
     with:
       java: 8
-      # Removido 'publish' para compilar apenas o seu instalador local
-      gradle_tasks: 'ciWriteBuildNumber setup build'
+      # Adicionado o 'genPatches' para alinhar os patches com a nova versão automaticamente
+      gradle_tasks: 'ciWriteBuildNumber setup genPatches build'
       legacy_prefix: 14
       legacy_build_number: 2848
-      artifact_name: 'forge'
+      artifact_name: 'PotatoForge'
     secrets:
-      # Deixamos as outras chaves limpas para o robô oficial do Forge não reclamar
       PROMOTE_ARTIFACT_WEBHOOK: ${{ secrets.PROMOTE_ARTIFACT_WEBHOOK }}
       PROMOTE_ARTIFACT_USERNAME: ${{ secrets.PROMOTE_ARTIFACT_USERNAME }}
       PROMOTE_ARTIFACT_PASSWORD: ${{ secrets.PROMOTE_ARTIFACT_PASSWORD }}
