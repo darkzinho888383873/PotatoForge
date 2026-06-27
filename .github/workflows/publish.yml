@@ -2,7 +2,6 @@ name: Publish
 
 on:
   push:
-    # Mudado para rodar em QUALQUER branch que você der push pelo celular
     branches: [ '**' ]
 
 permissions:
@@ -10,17 +9,18 @@ permissions:
 
 jobs:
   build:
-    uses: MinecraftForge/SharedActions/.github/workflows/gradle.yml@main
-    with:
-      java: 8
-      # Adicionado o 'genPatches' para alinhar os patches com a nova versão automaticamente
-      gradle_tasks: 'ciWriteBuildNumber setup genPatches build'
-      legacy_prefix: 14
-      legacy_build_number: 2848
-      artifact_name: 'PotatoForge'
-    secrets:
-      PROMOTE_ARTIFACT_WEBHOOK: ${{ secrets.PROMOTE_ARTIFACT_WEBHOOK }}
-      PROMOTE_ARTIFACT_USERNAME: ${{ secrets.PROMOTE_ARTIFACT_USERNAME }}
-      PROMOTE_ARTIFACT_PASSWORD: ${{ secrets.PROMOTE_ARTIFACT_PASSWORD }}
-      MAVEN_USER: ${{ secrets.MAVEN_USER }}
-      MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: Build with Gradle
+        run: ./gradlew ciWriteBuildNumber setup genPatches build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: PotatoForge
+          path: build/libs/
